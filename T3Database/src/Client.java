@@ -1,10 +1,17 @@
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class Client {
     private String username;
     private String fullName;
     private String email;
     private String phone;
     private int age;
-    
+
+    private static final Pattern usernamePattern = Pattern.compile("[a-z 0-9]{3,20}");
+    private static final Pattern emailPattern = Pattern.compile("[a-z 0-9 \\- \\. \\_ ]+ @ ([a-z 0-9 \\- \\_]+ \\.)+ [a-z]{2,4}",  Pattern.COMMENTS);
+    private static final Pattern phonePattern = Pattern.compile("[0-9]{7,15}");
+
     public Client(String username, String fullName, String email, String phone, int age) {
         this.username = username;
         this.fullName = fullName;
@@ -63,8 +70,15 @@ public class Client {
         return username;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUsername(String username) throws Exception {
+        //passa o usuario pelo regex usernamePattern
+        Matcher usernameMatcher = usernamePattern.matcher(username.toLowerCase());
+        //se o matcher retornar true, alteramos o nome de usuario, se não lançamos uma exceção
+        if(usernameMatcher.matches()){
+            this.username = username.toLowerCase();
+        }else{
+            throw new Exception("Invalid username");
+        }
     }
 
     public String getFullName() {
@@ -79,16 +93,30 @@ public class Client {
         return email;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setEmail(String email) throws Exception{
+        //passa o email pelo regex emailPattern
+        Matcher emailMatcher = emailPattern.matcher(email.toLowerCase());
+        //se o matcher retornar true, alteramos o email, se não lançamos uma exceção
+        if(emailMatcher.matches()){
+            this.email = email.toLowerCase();
+        }else{
+            throw new Exception("Invalid email");
+        }
     }
 
     public String getPhone() {
         return phone;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setPhone(String phone) throws Exception {
+        //passa o numero de telefone pelo regex phonePattern
+        Matcher phoneMatcher = phonePattern.matcher(phone);
+        //se o matcher retornar true, alteramos o phone, se não lançamos uma exceção
+        if(phoneMatcher.matches()){
+            this.phone = phone;
+        }else{
+            throw new Exception("Invalid Phone Number");
+        }
     }
 
     public int getAge() {

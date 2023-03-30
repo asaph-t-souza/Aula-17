@@ -56,6 +56,7 @@ public class App {
                 case 'u':
                 case 'U':
                     System.out.println("Selected: U - Update");
+                    myDatabase.updateOperation();
                     break;
                 case 'd':
                 case 'D':
