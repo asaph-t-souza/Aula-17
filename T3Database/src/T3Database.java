@@ -9,6 +9,8 @@ public class T3Database {
     private PreparedStatement selectUserStatement;
     private PreparedStatement updateStatement;
     private PreparedStatement deleteStatement;
+    private PreparedStatement countStatement;
+    private PreparedStatement searchByNameStatement;
 
     public T3Database() throws SQLException {
         // URL do BD "meu_banco"
@@ -26,11 +28,13 @@ public class T3Database {
         myConnection = DriverManager.getConnection(url, adminUsername, password);
         // prepara o statement insertStatement
         insertStatement = myConnection.prepareStatement("INSERT INTO clients VALUES (?, ?, ?, ?, ?)");
-        selectStatement = myConnection.prepareStatement("SELECT * FROM clients");
+        selectStatement = myConnection.prepareStatement("SELECT * FROM clients LIMIT 5 OFFSET ?");
         selectUserStatement = myConnection.prepareStatement("SELECT * FROM clients WHERE username = ?");
         updateStatement = myConnection.prepareStatement(
                 "UPDATE clients SET username = ?, fullname = ?, email = ?, phone = ?, age = ? WHERE username = ?");
         deleteStatement = myConnection.prepareStatement("DELETE FROM clients WHERE username = ?");
+        countStatement = myConnection.prepareStatement("SELECT count(*) FROM clients");
+        searchByNameStatement = myConnection.prepareStatement("SELECT * FROM clients WHERE LOWER(fullname) LIKE LOWER(?)");
     }
 
     public void insertOperation() {
@@ -62,22 +66,30 @@ public class T3Database {
 
     public void selectOperation() {
         System.out.println("List of clients:");
+      
+        int totalOfClients = totalOfClients();
+        int numberOfPages = totalOfPages(totalOfClients);
 
-        try {
-            ResultSet tableResult = selectStatement.executeQuery();
+        System.out.println("Total of clients: " + totalOfClients);    
 
-            while (tableResult.next()) {
-                Client oneClient = new Client(
-                        tableResult.getString(1).trim(),
-                        tableResult.getString(2).trim(),
-                        tableResult.getString(3).trim(),
-                        tableResult.getString(4).trim(),
-                        tableResult.getInt(5));
+        for (int page = 0; page < numberOfPages; page++) {
 
-                System.out.println(oneClient.toString());
+            try {
+                selectStatement.setInt(1, 5 * page);
+                ResultSet tableResult = selectStatement.executeQuery();   
+                printTableRows(tableResult);
+
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
             }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
+
+            System.out.println("Page: " + (page + 1) + "/" + numberOfPages);
+            if(page + 1 != numberOfPages){
+                System.out.println("Press Enter for the next Page");
+                System.out.println();
+                myScanner.nextLine();
+            }
+            
         }
     }
 
@@ -287,6 +299,56 @@ public class T3Database {
             System.out.println(e.getMessage());
         }
 
+    }
+
+    public int totalOfClients(){
+         // retorna o total de clientes 
+         int totalOfClients = 0;
+         try {
+             ResultSet countResult = countStatement.executeQuery();
+             if(countResult.next()){
+                 totalOfClients = countResult.getInt(1);
+             }
+         } catch (Exception e) {
+             System.out.println(e.getMessage());
+         }
+
+         return totalOfClients;
+    }
+
+    public static int totalOfPages(int totalOfClients){
+        //calcula o numero de paginas baseado na quantidade de clientes
+        int numberOfPages = 0;
+        if(totalOfClients % 5 == 0){
+            numberOfPages = totalOfClients / 5;
+        }else{
+            numberOfPages = totalOfClients / 5 + 1;
+        }
+        return numberOfPages;
+    }
+
+    public void searchOperation(){
+        try {
+            System.out.println("Type your search: ");
+            String searchValue = myScanner.nextLine();
+            searchByNameStatement.setString(1, "%" + searchValue + "%");
+            ResultSet searchResults = searchByNameStatement.executeQuery();
+            printTableRows(searchResults);
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+    }
+
+    public static void printTableRows(ResultSet table) throws SQLException{
+        while (table.next()) {
+            Client oneClient = new Client(
+                    table.getString(1).trim(),
+                    table.getString(2).trim(),
+                    table.getString(3).trim(),
+                    table.getString(4).trim(),
+                    table.getInt(5));
+            System.out.println(oneClient.toString());
+        }
     }
 
 }

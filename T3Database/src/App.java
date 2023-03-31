@@ -36,6 +36,7 @@ public class App {
             System.out.println("R - Read");
             System.out.println("U - Update");
             System.out.println("D - Delete");
+            System.out.println("S - Search");
             System.out.println("0 - Exit");
             System.out.println("-----------------");
             System.out.println();
@@ -62,6 +63,11 @@ public class App {
                 case 'D':
                     System.out.println("Selected: D - Delete");
                     myDatabase.deleteOperation();
+                    break;
+                case 's':
+                case 'S':
+                    System.out.println("Selected: S - Search");
+                    myDatabase.searchOperation();
                     break;
                 case '0':
                     System.out.println("Selected: 0 - Exit");
